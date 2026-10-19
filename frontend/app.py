@@ -15,7 +15,26 @@ def wyslij(metoda, url, dane=None):
         st.error(f"Brak połączenia z backendem ({url})")
         st.stop()
 
+widok = st.sidebar.radio("Widok", ["Obsługa", "Kuchnia"], horizontal=True)
 
+if widok == "Kuchnia":
+    st.title("Kuchnia")
+
+    @st.fragment(run_every="3s")
+    def zamowienia():
+        lista = wyslij("GET", API_ORDERS).json() 
+        if not lista:
+            st.info("Brak zamówień.")
+            return
+        for zam in lista:
+            with st.container(border=True):
+                st.subheader(f"Zamówienie nr {zam['id']}")
+                st.caption(f"Status: {zam['status']}")
+                for pozycja in zam["items"]:
+                    st.write(f"{pozycja['qty']}× {pozycja['name']}")
+
+    zamowienia()
+    st.stop()  
 
 menu = wyslij("GET", API_MENU).json()
 
