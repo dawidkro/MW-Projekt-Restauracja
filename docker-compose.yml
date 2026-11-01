@@ -1,23 +1,32 @@
 services:
-  redis:
-    image: redis:7-alpine
-    command: ["redis-server", "--appendonly", "yes"]
+  db:
+    image: mariadb:lts
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+      MARIADB_DATABASE: restaurant
+      MARIADB_USER: app
+      MARIADB_PASSWORD: ${DB_PASSWORD:-apppass}
     volumes:
-      - redisdata:/data
+      - dbdata:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 3s
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 15s
+      interval: 5s
+      timeout: 5s
       retries: 10
 
   backend:
     build: ./backend
     environment:
-      REDIS_HOST: redis
-      REDIS_PORT: "6379"
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: restaurant
+      DB_USER: app
+      DB_PASSWORD: ${DB_PASSWORD:-apppass}
     ports:
       - "8000:8000"
     depends_on:
-      redis:
+      db:
         condition: service_healthy
 
   frontend:
@@ -30,4 +39,4 @@ services:
       - backend
 
 volumes:
-  redisdata:
+  dbdata:
