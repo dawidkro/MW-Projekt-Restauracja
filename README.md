@@ -8,6 +8,7 @@ Użycie AI (Claude Opus, Sonnet 5.5):
 - ocena oraz sugestie do plików, m.in oba Dockerfile oraz backend (./backend/main.py); konkretnie implementacja requirements.txt
 
 Format wymiany danych - JSON
+
 GET /api/menu - Backend --> Frontend :
 Zwraca obiekt w którym kluczem jest kategorią a wartością lista dań: 
 ```json
