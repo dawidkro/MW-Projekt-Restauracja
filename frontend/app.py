@@ -3,7 +3,7 @@ import os
 import requests
 import streamlit as st
 
-BACKEND = os.getenv("BACKEND_URL", "http://localhost:8000")  # zmienna srodowiskowa jest w docker-compose.yml
+BACKEND = os.getenv("BACKEND_URL", "http://localhost:8000")  
 API_MENU = BACKEND + "/api/menu"
 API_ORDERS = BACKEND + "/api/orders"
 
@@ -32,6 +32,9 @@ if widok == "Kuchnia":
                 st.caption(f"Status: {zam['status']}")
                 for pozycja in zam["items"]:
                     st.write(f"{pozycja['qty']}× {pozycja['name']}")
+                if st.button("Usuń", key=f"usun-{zam['id']}"):
+                    wyslij("DELETE", f"{API_ORDERS}/{zam['id']}")
+                    st.rerun()
 
     zamowienia()
     st.stop()  

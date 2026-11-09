@@ -90,6 +90,21 @@ class OrderOut(BaseModel):
 app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json", lifespan=lifespan)
 
 
+@app.get("/health")
+def health():
+    # backend jest zdrowy dopiero wtedy, gdy odpowiada tez baza
+    try:
+        conn = connect()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+        finally:
+            conn.close()
+    except pymysql.MySQLError:
+        raise HTTPException(status_code=503, detail="Brak połączenia z bazą danych")
+    return {"status": "ok"}
+
+
 @app.get("/api/menu")
 def get_menu():
     return MENU
@@ -99,7 +114,7 @@ def get_menu():
 def create_order(order: OrderIn, conn=Depends(get_db)):
     for item in order.items:
         if item.name not in DOSTEPNE_DANIA:
-            raise HTTPException(status_code=404, detail=f"Nie ma w menu: {item.name}")
+            raise HTTPException(status_code=400, detail=f"Nie ma w menu: {item.name}")
 
     with conn.cursor() as cur:
         cur.execute("INSERT INTO orders (status) VALUES (%s)", ("nowe",))
@@ -131,3 +146,31 @@ def list_orders(conn=Depends(get_db)):
         by_order[it["order_id"]].append({"name": it["name"], "qty": it["qty"]})
 
     return [{"id": o["id"], "status": o["status"], "items": by_order[o["id"]]} for o in orders]
+
+
+@app.get("/api/orders/{order_id}", response_model=OrderOut)
+def get_order(order_id: int, conn=Depends(get_db)):
+    with conn.cursor() as cur:
+        cur.execute("SELECT id, status FROM orders WHERE id = %s", (order_id,))
+        order = cur.fetchone()
+        if order is None:
+            raise HTTPException(status_code=404, detail=f"Nie ma zamówienia nr {order_id}")
+
+        cur.execute(
+            "SELECT name, qty FROM order_items WHERE order_id = %s ORDER BY id",
+            (order_id,),
+        )
+        items = cur.fetchall()
+
+    return {"id": order["id"], "status": order["status"], "items": items}
+
+
+@app.delete("/api/orders/{order_id}", status_code=204)
+def delete_order(order_id: int, conn=Depends(get_db)):
+    with conn.cursor() as cur:
+        # pozycje z order_items usuwa baza (ON DELETE CASCADE)
+        usuniete = cur.execute("DELETE FROM orders WHERE id = %s", (order_id,))
+    conn.commit()
+
+    if usuniete == 0:
+        raise HTTPException(status_code=404, detail=f"Nie ma zamówienia nr {order_id}")
