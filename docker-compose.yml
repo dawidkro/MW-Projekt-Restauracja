@@ -4,7 +4,7 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
       MARIADB_DATABASE: restaurant
-      MARIADB_USER: app
+      MARIADB_USER: ${DB_USER:-app
       MARIADB_PASSWORD: ${DB_PASSWORD:-apppass}
     volumes:
       - dbdata:/var/lib/mysql
