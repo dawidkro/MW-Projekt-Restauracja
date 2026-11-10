@@ -3,8 +3,8 @@ services:
     image: mariadb:lts
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
-      MARIADB_DATABASE: restaurant
-      MARIADB_USER: ${DB_USER:-app
+      MARIADB_DATABASE: ${DB_NAME:-restaurant}
+      MARIADB_USER: ${DB_USER:-app}
       MARIADB_PASSWORD: ${DB_PASSWORD:-apppass}
     volumes:
       - dbdata:/var/lib/mysql
@@ -20,8 +20,8 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: "3306"
-      DB_NAME: restaurant
-      DB_USER: app
+      DB_NAME: ${DB_NAME:-restaurant}
+      DB_USER: ${DB_USER:-app}
       DB_PASSWORD: ${DB_PASSWORD:-apppass}
     ports:
       - "8000:8000"

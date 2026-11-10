@@ -92,7 +92,7 @@ app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json", lifespan=li
 
 @app.get("/health")
 def health():
-    # backend jest zdrowy dopiero wtedy, gdy odpowiada tez baza
+    # backend jest zdrowy gdy zdrowa jest tez baza
     try:
         conn = connect()
         try:
