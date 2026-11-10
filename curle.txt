@@ -1,0 +1,38 @@
+http://localhost:8000
+
+# endpoint health
+curl -i "http://localhost:8000/health"
+
+#menu
+curl -i "http://localhost:8000/api/menu"
+
+#dodanie zamowienia POST
+curl -i -X POST "http://localhost:8000/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {"name": "Pizza", "qty": 2},
+      {"name": "Cola", "qty": 1}
+    ]
+  }'
+
+#lista zamowien GET lista zasobow
+curl -i "http://localhost:8000/api/orders"
+
+#konkretne zamowienie GET pojedynczy zasob
+curl -i "http://localhost:8000/api/orders/1"
+
+#usuniecie zamowienia DELETE 
+curl -i -X DELETE "http://localhost:8000/api/orders/1"
+
+#http 400
+curl -i -X POST "http://localhost:8000/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{"items":[{"name":"Hot dog","qty":1}]}'
+
+#http 404
+curl -i "http://localhost:8000/api/orders/999999"
+
+
+wywolanie initsql
+docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE"' < backend/init.sql

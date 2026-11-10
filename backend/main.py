@@ -27,36 +27,36 @@ def get_db():
         conn.close() 
 
 
-SCHEMA = [
-    """
-    CREATE TABLE IF NOT EXISTS orders (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        status VARCHAR(32) NOT NULL DEFAULT 'nowe'
-    ) ENGINE=InnoDB
-    """,
-    """
-    CREATE TABLE IF NOT EXISTS order_items (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        order_id INT NOT NULL,
-        name VARCHAR(100) NOT NULL,
-        qty INT NOT NULL,
-        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB
-    """,
-]
+# SCHEMA = [
+#     """
+#     CREATE TABLE IF NOT EXISTS orders (
+#         id INT AUTO_INCREMENT PRIMARY KEY,
+#         status VARCHAR(32) NOT NULL DEFAULT 'nowe'
+#     ) ENGINE=InnoDB
+#     """,
+#     """
+#     CREATE TABLE IF NOT EXISTS order_items (
+#         id INT AUTO_INCREMENT PRIMARY KEY,
+#         order_id INT NOT NULL,
+#         name VARCHAR(100) NOT NULL,
+#         qty INT NOT NULL,
+#         FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+#     ) ENGINE=InnoDB
+#     """,
+# ]
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    conn = connect()
-    try:
-        with conn.cursor() as cur:
-            for stmt in SCHEMA:
-                cur.execute(stmt)
-        conn.commit()
-    finally:
-        conn.close()
-    yield
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     conn = connect()
+#     try:
+#         with conn.cursor() as cur:
+#             for stmt in SCHEMA:
+#                 cur.execute(stmt)
+#         conn.commit()
+#     finally:
+#         conn.close()
+#     yield
 
 
 
