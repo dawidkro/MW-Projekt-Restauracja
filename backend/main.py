@@ -87,7 +87,7 @@ class OrderOut(BaseModel):
     status: str
 
 
-app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json", lifespan=lifespan)
+app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json")
 
 
 @app.get("/health")
