@@ -22,22 +22,18 @@ def get_db():
     try:
         yield conn
     finally:
-        conn.close() 
+        conn.close()
 
 
+def read_menu(conn):
+    with conn.cursor() as cur:
+        cur.execute("SELECT category, name FROM menu ORDER BY id")
+        rows = cur.fetchall()
 
-
-
-MENU = {
-    "Przystawki": ["Talerz wędlin", "Talerz serów", "Zupka"],
-    "Napoje": ["Cola", "Woda", "Sok pomarańczowy", "Kawa"],
-    "Dania główne": ["Frytki", "Nuggetsy", "Pizza", "Burger", "Sushi"],
-    "Deser": ["Sernik", "Murzynek"],
-}
-
-DOSTEPNE_DANIA = set()
-for dania in MENU.values():
-    DOSTEPNE_DANIA.update(dania)
+    menu = {}
+    for row in rows:
+        menu.setdefault(row["category"], []).append(row["name"])
+    return menu
 
 
 class OrderItem(BaseModel):
@@ -73,18 +69,14 @@ def health():
     return {"status": "ok"}
 
 
-@app.get("/api/menu")
-def get_menu():
-    return MENU
-
-
 @app.post("/api/orders", response_model=OrderOut, status_code=201)
 def create_order(order: OrderIn, conn=Depends(get_db)):
-    for item in order.items:
-        if item.name not in DOSTEPNE_DANIA:
-            raise HTTPException(status_code=400, detail=f"Nie ma w menu: {item.name}")
-
     with conn.cursor() as cur:
+        for item in order.items:
+            cur.execute("SELECT 1 FROM menu WHERE name = %s LIMIT 1", (item.name,))
+            if cur.fetchone() is None:
+                raise HTTPException(status_code=400, detail=f"Nie ma w menu: {item.name}")
+
         cur.execute("INSERT INTO orders (status) VALUES (%s)", ("nowe",))
         order_id = cur.lastrowid
         cur.executemany(
@@ -142,3 +134,8 @@ def delete_order(order_id: int, conn=Depends(get_db)):
 
     if usuniete == 0:
         raise HTTPException(status_code=404, detail=f"Nie ma zamówienia nr {order_id}")
+
+
+@app.get("/api/menu")
+def get_menu(conn=Depends(get_db)):
+    return read_menu(conn)
