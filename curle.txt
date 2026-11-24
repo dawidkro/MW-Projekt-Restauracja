@@ -34,5 +34,8 @@ curl -i -X POST "http://localhost:8000/api/orders" \
 curl -i "http://localhost:8000/api/orders/999999"
 
 
-wywolanie initsql
-docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE"' < backend/init.sql
+
+# init.sql uruchamia sie sam przy pierwszym starcie bazy (pusty wolumen dbdata),
+# NIE trzeba go wywolywac recznie. Czysty start (usuwa dane!):
+docker compose down -v
+docker compose up --build
